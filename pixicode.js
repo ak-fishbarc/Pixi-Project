@@ -8,7 +8,7 @@ const Level =
   sizex: 500,
   sizey: 500,
   numofsectors: 0,
-  sectors: null,
+  sectors: new Map(),
   /* Create function that will divide map into sectors.
      Each sector will contain certain amount of objects, like floors, for
      collision detection, etc. This is to lower the amount of search required.
@@ -17,21 +17,24 @@ const Level =
      Further this would take players position to check in which sector to look
      for collisions, etc. */
   divideSectors: function(objects_list){
-    sectorSize = this.numofsectors * 250;
-    this.sectors = new Map();
-
-    this.sectors.set(sectorSize+250, []);
-    for(x in objects_list)
+    // For simplicity sizex and sizey are equal.
+    let divide_by_size = this.sizex / 250;
+    for(let x = 0; x < divide_by_size; x++)
     {
-      let obj = objects_list[x];
-      this.sectors.forEach( function(list, sec){
-        console.log(sec);
-        if(obj.sprite.x < sec)
-        {
-          list.push(obj);
-          console.log(obj);
-        }
-      });
+      sector_size = this.numofsectors * 250;
+      this.sectors.set(sector_size, []);
+      for(x in objects_list)
+      {
+        let obj = objects_list[x];
+        this.sectors.forEach( function(list, sec){
+          // sec will be the size of sector. For example: Objects between x,y = 0
+          // and x,y = 250 will end up added to the list of objects in this sector.
+          if(obj.sprite.x > sector_size && obj.sprite.x <= sec + 250)
+          {
+            list.push(obj);
+          }
+        });
+      }
     }
   }
 }
@@ -139,14 +142,21 @@ function keysMove(event) {
 
 app.ticker.add((delta)=>
 {
-  for(let x in floors)
+  level1.sectors.forEach(function(list, sec)
   {
-    player1.isStanding(floors[x]);
-    if(player1.isstanding == true)
+    if(player1.sprite.x > sec || player1.sprite.x <= sec + 250)
     {
-      break;
+      for(x in list)
+      {
+        player1.isStanding(list[x]);
+        if(player1.isstanding == true)
+        {
+          break;
+        }
+      }
     }
-  }
+  });
+
   if(player1.isjumping == true)
   {
     elapsed += delta;
@@ -167,4 +177,5 @@ app.ticker.add((delta)=>
         player1.sprite.y += physics.gravity;
       }
   }
+
 })
