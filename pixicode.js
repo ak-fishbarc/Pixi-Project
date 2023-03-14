@@ -8,12 +8,31 @@ const Level =
   sizex: 500,
   sizey: 500,
   numofsectors: 0,
-  // Create function that will divide map into sectors.
-  // Each sector will contain certain amount of objects, like floors, for
-  // collision detection, etc. This is to lower the amount of search required.
+  sectors: null,
+  /* Create function that will divide map into sectors.
+     Each sector will contain certain amount of objects, like floors, for
+     collision detection, etc. This is to lower the amount of search required.
+     For this project it's not neccessary to implement this. There aren't going
+     to be that many objects. It's here just as an idea.
+     Further this would take players position to check in which sector to look
+     for collisions, etc. */
   divideSectors: function(objects_list){
     sectorSize = this.numofsectors * 250;
-    let sector = newMap();
+    this.sectors = new Map();
+
+    this.sectors.set(sectorSize+250, []);
+    for(x in objects_list)
+    {
+      let obj = objects_list[x];
+      this.sectors.forEach( function(list, sec){
+        console.log(sec);
+        if(obj.sprite.x < sec)
+        {
+          list.push(obj);
+          console.log(obj);
+        }
+      });
+    }
   }
 }
 
@@ -71,13 +90,12 @@ const Physics =
   gravity: 3
 }
 
+let level1 = Level;
 let player1 = Player;
 let brick_floor = createFloor();
 let brick_floor2 = createFloor();
 let physics = Physics;
 let elapsed = 0;
-
-let floors = [brick_floor, brick_floor2];
 
 player1.sprite.x = 50;
 player1.sprite.y = 145;
@@ -88,6 +106,9 @@ brick_floor.sprite.x = 50;
 brick_floor.sprite.y = 200;
 brick_floor2.sprite.x = 150;
 brick_floor2.sprite.y = 150;
+
+let floors = [brick_floor, brick_floor2];
+level1.divideSectors(floors);
 
 app.stage.addChild(player1.sprite);
 app.stage.addChild(brick_floor.sprite);
